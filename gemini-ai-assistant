@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gemini AI Photo Analyzer</title>
+  <style>
+    body { font-family: Arial; padding: 2em; }
+    #result { margin-top: 1em; }
+  </style>
+</head>
+<body>
+  <h2>Analyze a Photo with Gemini AI</h2>
+  <input type="file" id="photoInput" accept="image/*" />
+  <button onclick="analyzePhoto()">Analyze</button>
+  <div id="result"></div>
+  <script>
+    // Use var for ServiceNow compatibility
+    var API_KEY = "AIzaSyDYI5n4X1GbGnlmEsTgSMC8ZUm7Yt2Or7I";
+    var ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+
+    function analyzePhoto() {
+      var input = document.getElementById('photoInput');
+      if (!input.files[0]) {
+        alert('Please select a photo!');
+        return;
+      }
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        // Convert image to base64 for Gemini API
+        var imageBase64 = e.target.result.split(',')[1];
+        var requestBody = {
+          "contents": [
+            {
+              "parts": [
+                {
+                  "inline_data": {
+                    "mime_type": input.files[0].type,
+                    "data": imageBase64
+                  }
+                }
+              ]
+            }
+          ]
+        };
+        fetch(ENDPOINT + "?key=" + API_KEY, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(requestBody)
+        })
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById("result").innerText = JSON.stringify(data, null, 2);
+        })
+        .catch(error => {
+          document.getElementById("result").innerText = "Error: " + error;
+        });
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  </script>
+</body>
+</html>
